@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # phi_spectrum.py
 
-"""Wrapper to calculate the entire spectrum of Phi values for a given subsystem"""
+"""Wrapper to calculate the entire spectrum of Phi values for each cut of a given subsystem"""
 
 import numpy as np
 import itertools
@@ -12,10 +12,6 @@ from .utils import powerset
 from .models import MaximallyIrreducibleCause, MaximallyIrreducibleEffect, Concept, CauseEffectStructure
 from .compute.distance import ces_distance
 from .compute.subsystem import sia_bipartitions
-# import .utils
-# import subsystem
-# import models
-
 
 ## Find all concepts for the specified subsystem
 def get_all_concepts(subsystem):
@@ -73,7 +69,7 @@ def get_all_CES(all_concepts):
 
 	return(all_CES)
 
-## Now get the spectrum of Phi values
+## Return the spectrum of Phi values
 def get_phi_spectrum(subsystem,display_CES=False):
 
 	## Initialize an empty list to store all Phi values for all cuts
@@ -116,5 +112,33 @@ def get_phi_spectrum(subsystem,display_CES=False):
 		Phi_Spectrum.append(Phi_cut)
 
 	return(bipartitions,Phi_Spectrum)
+
+## Return all Phi values between the min and max Phi value of the MIP
+def get_Phi_MIP(phi_spectrum):
+
+	cuts = phi_spectrum[0]
+	values = phi_spectrum[1]
+
+	## Get the minimum Phi value of the MIP
+	Phi_min_MIP = np.min(values[0])
+	for each in values:
+	    if np.min(each) < Phi_min_MIP:
+	        Phi_min_MIP = np.min(each)
+	        
+	        
+	## Get the list(s) of Phi values corresponding to possible MIPS
+	possible_MIPs = (index for index in values if np.min(index) == Phi_min_MIP)
+
+
+	## Upper bound on Phi is the smallest of the max Phi values
+	Phi_max_MIP = np.max(values[0])
+	for each in possible_MIPs:
+	    if np.max(each) < Phi_max_MIP:
+	        Phi_max_MIP = np.max(each)
+
+    ## Return all Phi values between Phi_min_MIP and Phi_max_MIP
+	valid_phi = [phi for index in values for phi in index if phi >= Phi_min_MIP and phi <= Phi_max_MIP]
+	return(np.unique(valid_phi))
+
 
 
