@@ -1,3 +1,46 @@
+PyPhi-Spectrum is a wrapper for PyPhi that can be used to calculate all possible Phi Values. To install, download or clone this repository. Basic usage is as follows:
+```python
+import pyphi
+import numpy as np
+from pyphi import phi_spectrum
+from pyphi import utils
+
+# Transition probability matrix. Saying where each state goes (little-end notation)
+tpm = np.array([
+    [0.,0.,0.],
+    [0.,0.,0.],
+    [1.,0.,0.],
+    [1.,0.,1.],
+    [0.,1.,0.],
+    [0.,1.,0.],
+    [1.,1.,0.],
+    [1.,1.,1.]
+])
+
+# Set up network object
+network = pyphi.Network(tpm, node_labels=['R','C','P'])
+print("Network = ",network.node_labels)
+
+# Put the system into a given state
+state = (0,0,0)
+nodes = ['R','C','P']
+
+## Get the requisite Subsystem
+subsystem = pyphi.Subsystem(network, state, nodes)
+
+## Calculate all Phi values
+display_CES= False  # if True, output will display constellations
+Phi_Spectrum = phi_spectrum.get_phi_spectrum(subsystem,display_CES)
+
+print("\nCuts = ",Phi_Spectrum[0])
+print("\nPhi Spectrum = ",Phi_Spectrum[1])
+
+Phi_MIP = phi_spectrum.get_Phi_MIP(Phi_Spectrum)
+print("Phi MIP = ",Phi_MIP)
+
+```
+
+
 <p>
   <a href="http://pyphi.readthedocs.io/">
     <img alt="PyPhi logo" src="https://github.com/wmayner/pyphi/raw/develop/docs/_static/pyphi-logo-text-760x180.png" height="90px" width="380px" style="max-width:100%">
