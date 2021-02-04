@@ -40,6 +40,7 @@ print("Phi MIP = ",Phi_MIP)
 
 ```
 
+Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality.
 
 <p>
   <a href="http://pyphi.readthedocs.io/">
