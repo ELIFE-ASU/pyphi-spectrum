@@ -5,7 +5,6 @@ PyPhi-Spectrum is a wrapper for PyPhi that can be used to calculate all possible
 import pyphi
 import numpy as np
 from pyphi import phi_spectrum
-from pyphi import utils
 
 # Transition probability matrix. Saying where each state goes (little-end notation)
 tpm = np.array([
@@ -20,19 +19,20 @@ tpm = np.array([
 ])
 
 # Set up network object
-network = pyphi.Network(tpm, node_labels=['R','C','P'])
+network = pyphi.Network(tpm, node_labels=['A','B','C'])
 print("Network = ",network.node_labels)
 
 # Put the system into a given state
 state = (0,0,0)
-nodes = ['R','C','P']
+nodes = ['A','B','C']
 
 ## Get the requisite Subsystem
 subsystem = pyphi.Subsystem(network, state, nodes)
 
 ## Calculate all Phi values
 display_CES= False  # if True, output will display constellations
-Phi_Spectrum = phi_spectrum.get_phi_spectrum(subsystem,display_CES)
+solution = None # how to handle degenerate purview elements ('Smallest','Largest', or 'Moon')
+Phi_Spectrum = phi_spectrum.get_phi_spectrum(subsystem,display_CES,solution)
 
 print("\nCuts = ",Phi_Spectrum[0])
 print("\nPhi Spectrum = ",Phi_Spectrum[1])
@@ -42,38 +42,85 @@ print("Phi MIP = ",Phi_MIP)
 
 ```
 
-Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality.
+Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality. The wrapper works as follows
 
-<p>
-  <a href="http://pyphi.readthedocs.io/">
-    <img alt="PyPhi logo" src="https://github.com/wmayner/pyphi/raw/develop/docs/_static/pyphi-logo-text-760x180.png" height="90px" width="380px" style="max-width:100%">
-  </a>
-</p>
+```python
+## Return the spectrum of Phi values
+def get_phi_spectrum(subsystem,verbose=False,solution=None):
 
-[![Documentation badge](https://readthedocs.org/projects/pyphi/badge/?style=flat-square&maxAge=600)](https://pyphi.readthedocs.io/)
-[![Travis build badge](https://img.shields.io/travis/wmayner/pyphi.svg?style=flat-square&maxAge=600)](https://travis-ci.org/wmayner/pyphi)
-[![Coveralls.io badge](https://img.shields.io/coveralls/wmayner/pyphi/develop.svg?style=flat-square&maxAge=600)](https://coveralls.io/github/wmayner/pyphi?branch=develop)
-[![License badge](https://img.shields.io/github/license/wmayner/pyphi.svg?style=flat-square&maxAge=86400)](https://github.com/wmayner/pyphi/blob/master/LICENSE.md)
-[![Python versions badge](https://img.shields.io/pypi/pyversions/pyphi.svg?style=flat-square&maxAge=86400)](https://wiki.python.org/moin/Python2orPython3)
+  ## Initialize an empty list to store all Phi values for all cuts
+  Phi_Spectrum = []
 
-PyPhi is a Python library for computing integrated information (𝚽), and the
-associated quantities and objects.
+  ## Find all concepts for the specified subsystem
+  all_concepts = get_all_concepts(subsystem,solution)
 
-**If you use this code, please cite the paper:**
+  ## Create all possible cause-effect structures (CES) via the cartesian product of all concepts for each mechanism
+  original_CES = get_all_CES(all_concepts)
 
----
-
-Mayner WGP, Marshall W, Albantakis L, Findlay G, Marchman R, Tononi G. (2018)
-[PyPhi: A toolbox for integrated information
-theory](https://doi.org/10.1371/journal.pcbi.1006343). PLOS Computational
-Biology 14(7): e1006343. <https://doi.org/10.1371/journal.pcbi.1006343>
-
----
-
-An [illustrated tutorial on how Φ is calculated](https://doi.org/10.1371/journal.pcbi.1006343.s001) is available as a supplement to the paper.
+  print("\tNumber of Non-unique Constellations =",len(original_CES))
+  if verbose:
+    print(original_CES)
 
 
-## Usage, Examples, and API documentation
+  ## Now cut the original TPM and find the new set of concepts. Get the Phi value and repeat the cut
+  bipartitions = sia_bipartitions(subsystem.cut_indices, subsystem.cut_node_labels)
+  for cut in bipartitions:
+    print("\nEvaluating Cut ",cut)
+    new_subsystem = subsystem.apply_cut(cut)
+    
+    ## Find all concepts for the specified subsystem
+    new_concepts = get_all_concepts(new_subsystem,solution)
+    new_CES = get_all_CES(new_concepts)
+
+    print("\tNumber of Non-unique Constellations =",len(new_CES))
+    if verbose:
+      print(new_CES)
+
+    ## Now store all possible Phi values for this cut
+    Phi_cut = []
+    for original in original_CES:
+      for new in new_CES:
+        Phi = ces_distance(original,new)
+        if Phi not in Phi_cut:
+          Phi_cut.append(Phi)
+        
+    ## Append the list of Phi values to the spectrum
+    if verbose:
+      print("\tPhi Values for Cut = ",Phi_cut)
+    Phi_Spectrum.append(Phi_cut)
+
+  return(bipartitions,Phi_Spectrum)
+
+## Return all Phi values between the min and max Phi value of the MIP
+def get_Phi_MIP(phi_spectrum):
+
+  cuts = phi_spectrum[0]
+  values = phi_spectrum[1]
+
+  ## Get the minimum Phi value of the MIP
+  Phi_min_MIP = np.min(values[0])
+  for each in values:
+      if np.min(each) < Phi_min_MIP:
+          Phi_min_MIP = np.min(each)
+          
+          
+  ## Get the list(s) of Phi values corresponding to possible MIPS
+  possible_MIPs = (index for index in values if np.min(index) == Phi_min_MIP)
+
+
+  ## Upper bound on Phi is the smallest of the max Phi values
+  Phi_max_MIP = np.max(values[0])
+  for each in possible_MIPs:
+      if np.max(each) < Phi_max_MIP:
+          Phi_max_MIP = np.max(each)
+
+    ## Return all Phi values between Phi_min_MIP and Phi_max_MIP
+  valid_phi = [phi for index in values for phi in index if phi >= Phi_min_MIP and phi <= Phi_max_MIP]
+  return(np.unique(valid_phi))
+  
+```
+
+## Core PyPhi Usage, Examples, and API documentation can be found at:
 
 - [Documentation for the latest stable
   release](http://pyphi.readthedocs.io/en/stable/)
@@ -82,103 +129,6 @@ An [illustrated tutorial on how Φ is calculated](https://doi.org/10.1371/journa
 - Documentation is also available within the Python interpreter with the `help`
   function.
 
-
-## Installation
-
-Set up a Python 3 virtual environment and install with
-
-```bash
-pip install pyphi
-```
-
-To install the latest development version, which is a work in progress and may
-have bugs, run:
-
-```bash
-pip install "git+https://github.com/wmayner/pyphi@develop#egg=pyphi"
-```
-
-**Note:** this software is only supported on Linux and macOS. However, if you
-use Windows, you can run it by using the [Anaconda
-Python](https://www.anaconda.com/what-is-anaconda/) distribution and
-[installing PyPhi with conda](https://anaconda.org/wmayner/pyphi):
-
-```bash
-conda install -c wmayner pyphi
-```
-
-### Detailed installation guide for Mac OS X
-
-[See here](https://github.com/wmayner/pyphi/blob/develop/INSTALLATION.rst).
-
-
-## User group
-
-For discussion about the software or integrated information theory in general,
-you can join the [pyphi-users
-group](https://groups.google.com/forum/#!forum/pyphi-users).
-
-For technical issues with PyPhi or feature requests, please use the [issues
-page](https://github.com/wmayner/pyphi/issues).
-
-
-## Contributing
-
-To help develop PyPhi, fork the project on GitHub and install the requirements
-with
-
-```bash
-pip install -r requirements.txt
-```
-
-The `Makefile` defines some tasks to help with development:
-
-```bash
-make test
-```
-
-runs the unit tests every time you change the source code.
-
-```bash
-make benchmark
-```
-
-runs performance benchmarks.
-
-```bash
-make docs
-```
-
-builds the HTML documentation.
-
-### Developing on Linux
-
-Make sure you install the C headers for Python 3, SciPy, and NumPy
-before installing the requirements:
-
-```bash
-sudo apt-get install python3-dev python3-scipy python3-numpy
-```
-
-### Developing on Windows
-
-If you're just looking for an editable install, pip may work better than the conda develop utility included in the conda-build package. When using pip on Windows, the build of pyemd may fail. The simplest solution to this is to obtain pyemd through conda.
-
-```bash
-conda create -n pyphi_dev
-conda activate pyphi_dev
-conda install -c wmayner pyemd
-cd path/to/local/editable/copy/of/pyphi
-pip install -e .
-```
-
-Unfortunately, pip isn't great at managing the DLLs that some packages (especially scipy) rely on. If you have missing DLL errors, try reinstalling the offending package (here, scipy) with conda.
-
-```bash
-conda activate pyphi_dev
-pip uninstall scipy
-conda install scipy
-```
 
 ## Credit
 
@@ -226,11 +176,4 @@ PLoS Comput Biol 10(5): e1003588. doi: 10.1371/journal.pcbi.1003588.
 }
 ```
 
-This project is inspired by a [previous
-project](https://github.com/albantakis/iit) written in Matlab by L. Albantakis,
-M. Oizumi, A. Hashmi, A. Nere, U. Olcese, P. Rana, and B. Shababo.
-
-Correspondence regarding this code and the PyPhi paper should be directed to
-Will Mayner, at [<mayner@wisc.edu>](mailto:mayner@wisc.edu). Correspondence
-regarding the Matlab code and the IIT 3.0 paper should be directed to Larissa
-Albantakis, PhD, at [<albantakis@wisc.edu>](mailto:albantakis@wisc.edu).
+Correspondence regarding the modified `PyPhi` code (`PyPhi-Spectrum`) should be directed to Jake Hanson, at [<jake.hanson@asu.edu>](mailto:jake.hanson@asu.edu).
