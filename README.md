@@ -1,48 +1,18 @@
 ## PyPhi-Spectrum
-PyPhi-Spectrum is a wrapper for PyPhi that can be used to calculate all possible Phi Values. To install, download or clone this repository. Basic usage is as follows:
+`PyPhi-Spectrum` is a wrapper for `PyPhi` that can be used to calculate all possible Phi Values for a given subsystem. To install, download or clone this repository.
 
-```python
-import pyphi
-import numpy as np
-from pyphi import phi_spectrum
 
-# Transition probability matrix. Saying where each state goes (little-end notation)
-tpm = np.array([
-    [0.,0.,0.],
-    [0.,0.,0.],
-    [1.,0.,0.],
-    [1.,0.,1.],
-    [0.,1.,0.],
-    [0.,1.,0.],
-    [1.,1.,0.],
-    [1.,1.,1.]
-])
+#### Overview
+For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid Phi_MIP values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously generated and keeps only those between the min and max Phi value of the MIP.
 
-# Set up network object
-network = pyphi.Network(tpm, node_labels=['A','B','C'])
-print("Network = ",network.node_labels)
+#### Potential Solutions
+The problem of degenerate core causes (also known as "underdetermined qualia") has several unofficial solutions, which can be implemented using the `solution` keyword in the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all of the smallest or largest degenerate causes/effects if they are the same size. Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
 
-# Put the system into a given state
-state = (0,0,0)
-nodes = ['A','B','C']
+An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi (big Phi) based on the sum of phi values (little phi) rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions, since it is based on a completely different definition of Phi.
 
-## Get the requisite Subsystem
-subsystem = pyphi.Subsystem(network, state, nodes)
+#### Core Functionality
 
-## Calculate all Phi values
-display_CES= False  # if True, output will display constellations
-solution = None # how to handle degenerate purview elements ('Smallest','Largest', or 'Moon')
-Phi_Spectrum = phi_spectrum.get_phi_spectrum(subsystem,display_CES,solution)
-
-print("\nCuts = ",Phi_Spectrum[0])
-print("\nPhi Spectrum = ",Phi_Spectrum[1])
-
-Phi_MIP = phi_spectrum.get_Phi_MIP(Phi_Spectrum)
-print("Phi MIP = ",Phi_MIP)
-
-```
-
-Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality. The wrapper works as follows
+Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality. The wrapper is implemented as follows:
 
 ```python
 ## Return the spectrum of Phi values
@@ -117,10 +87,56 @@ def get_Phi_MIP(phi_spectrum):
     ## Return all Phi values between Phi_min_MIP and Phi_max_MIP
   valid_phi = [phi for index in values for phi in index if phi >= Phi_min_MIP and phi <= Phi_max_MIP]
   return(np.unique(valid_phi))
-  
+
 ```
 
-## Core PyPhi Usage, Examples, and API documentation can be found at:
+#### Basic Usage
+Basic usage for the `PyPhi_Spectrum` wrapper is as follows:
+
+```python
+import pyphi
+import numpy as np
+from pyphi import phi_spectrum
+
+# Transition probability matrix. Saying where each state goes (little-end notation)
+tpm = np.array([
+    [0.,0.,0.],
+    [0.,0.,0.],
+    [1.,0.,0.],
+    [1.,0.,1.],
+    [0.,1.,0.],
+    [0.,1.,0.],
+    [1.,1.,0.],
+    [1.,1.,1.]
+])
+
+# Set up network object
+network = pyphi.Network(tpm, node_labels=['A','B','C'])
+print("Network = ",network.node_labels)
+
+# Put the system into a given state
+state = (0,0,0)
+nodes = ['A','B','C']
+
+## Get the requisite Subsystem
+subsystem = pyphi.Subsystem(network, state, nodes)
+
+## Calculate all Phi values
+display_CES = False  # if True, output will display all constellations
+solution = None # how to handle degenerate purview elements (None,'Smallest','Largest', or 'Moon')
+Phi_Spectrum = phi_spectrum.get_phi_spectrum(subsystem,display_CES,solution)
+
+## Print the spectrum of Phi values for each cut
+print("\nCuts = ",Phi_Spectrum[0])
+print("\nPhi Spectrum = ",Phi_Spectrum[1])
+
+## Print all valid Phi_MIP values
+Phi_MIP = phi_spectrum.get_Phi_MIP(Phi_Spectrum)
+print("Phi MIP = ",Phi_MIP)
+
+```
+
+#### Core PyPhi Usage, Examples, and API documentation can be found at:
 
 - [Documentation for the latest stable
   release](http://pyphi.readthedocs.io/en/stable/)
@@ -176,4 +192,4 @@ PLoS Comput Biol 10(5): e1003588. doi: 10.1371/journal.pcbi.1003588.
 }
 ```
 
-Correspondence regarding the modified `PyPhi` code (`PyPhi-Spectrum`) should be directed to Jake Hanson, at [<jake.hanson@asu.edu>](mailto:jake.hanson@asu.edu).
+Correspondence regarding the modified `PyPhi` code (`PyPhi-Spectrum`) should be directed to Jake Hanson, at [<jake.hanson@asu.edu>](mailto:jake.hanson@asu.edu). Correspondence regarding core `PyPhi` functionality should be directed to the original authors.
