@@ -1,5 +1,7 @@
 ## PyPhi-Spectrum
-PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi Values for a given subsystem. To install, download or clone this repository.
+PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given subsystem. It's core functionality is based on elementary function calls to PyPhi, however, it wraps these function calls together in a way that retains all possible Phi values that result from degenerate core causes/effects rather than selecting one arbitrarily.
+
+To install, download or clone this repository.
 
 
 #### Overview
@@ -90,7 +92,7 @@ def get_Phi_MIP(phi_spectrum):
 
 ```
 
-#### Basic Usage
+#### Sample Usage
 Basic usage for the `PyPhi_Spectrum` wrapper is as follows:
 
 ```python
@@ -136,7 +138,7 @@ print("Phi MIP = ",Phi_MIP)
 
 ```
 
-#### Core PyPhi Usage, Examples, and API documentation can be found at:
+#### More information about PyPhi can be found at:
 
 - [Documentation for the latest stable
   release](http://pyphi.readthedocs.io/en/stable/)
