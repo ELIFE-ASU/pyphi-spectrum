@@ -1,5 +1,5 @@
 ## PyPhi-Spectrum
-`PyPhi-Spectrum` is a wrapper for `PyPhi` that can be used to calculate all possible Phi Values for a given subsystem. To install, download or clone this repository.
+PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi Values for a given subsystem. To install, download or clone this repository.
 
 
 #### Overview
