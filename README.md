@@ -1,20 +1,24 @@
 ## PyPhi-Spectrum
-PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given subsystem. It's core functionality is based on elementary function calls to PyPhi, however, it wraps these function calls together in a way that retains all possible Phi values that result from degenerate core causes/effects rather than selecting one arbitrarily.
+PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given subsystem. Its core functionality is based on elementary function calls to PyPhi, however, it wraps this functionality together in a way that retains all possible Phi values that result as a consequence of degenerate core causes/effects.
+
+### Installation
 
 To install, download or clone this repository.
 
 
-#### Overview
-For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid Phi_MIP values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously generated and keeps only those between the min and max Phi value of the MIP.
+### Overview
 
-#### Potential Solutions
-The problem of degenerate core causes (also known as "underdetermined qualia") has several unofficial solutions, which can be implemented using the `solution` keyword in the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all of the smallest or largest degenerate causes/effects if they are the same size. Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
+For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid Phi_MIP values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously calculated and keeps only those between the min and max Phi value of the MIP.
 
-An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi (big Phi) based on the sum of phi values (little phi) rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions, since it is based on a completely different definition of Phi.
+### Potential Solutions
 
-#### Core Functionality
+The problem of degenerate core causes (also known as "underdetermined qualia") has several unofficial solutions, which can be implemented using the `solution` keyword passed to the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all possible degenerate core causes/effects of a given size (i.e. biggest or smallest). Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
 
-Other than the `phi_spectrum.py` file, everything is original `PyPhi` functionality. The wrapper is implemented as follows:
+An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi ("big Phi") based on the sum of phi values ("little phi") rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions since it implements a completely different definition of Phi.
+
+### Core Functionality
+
+Other than the `phi_spectrum.py` file, everything is core PyPhi functionality. The wrapper is implemented as follows:
 
 ```python
 ## Return the spectrum of Phi values
@@ -92,8 +96,8 @@ def get_Phi_MIP(phi_spectrum):
 
 ```
 
-#### Sample Usage
-Basic usage for the `PyPhi_Spectrum` wrapper is as follows:
+### Sample Usage
+Sample usage for the `PyPhi_Spectrum` wrapper is as follows:
 
 ```python
 import pyphi
@@ -138,7 +142,9 @@ print("Phi MIP = ",Phi_MIP)
 
 ```
 
-#### More information about PyPhi can be found at:
+## Credit
+
+### More information about core PyPhi can be found at:
 
 - [Documentation for the latest stable
   release](http://pyphi.readthedocs.io/en/stable/)
@@ -146,9 +152,6 @@ print("Phi MIP = ",Phi_MIP)
   version](http://pyphi.readthedocs.io/en/latest/).
 - Documentation is also available within the Python interpreter with the `help`
   function.
-
-
-## Credit
 
 ### Please cite these papers if you use this code:
 
@@ -194,4 +197,5 @@ PLoS Comput Biol 10(5): e1003588. doi: 10.1371/journal.pcbi.1003588.
 }
 ```
 
-Correspondence regarding the modified `PyPhi` code (`PyPhi-Spectrum`) should be directed to Jake Hanson, at [<jake.hanson@asu.edu>](mailto:jake.hanson@asu.edu). Correspondence regarding core `PyPhi` functionality should be directed to the original authors.
+## Correspondence
+Correspondence regarding the modified PyPhi code (PyPhi-Spectrum) should be directed to Jake Hanson, at [<jake.hanson@asu.edu>](mailto:jake.hanson@asu.edu). Correspondence regarding core PyPhi functionality should be directed to the original authors.
