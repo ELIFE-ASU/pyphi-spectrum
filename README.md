@@ -9,7 +9,7 @@ For more details, see https://www.biorxiv.org/content/10.1101/2021.04.07.438793v
 
 ### Installation
 
-To install, download or clone this repository
+To install, download or clone this repository.
 
 ### Usage
 
