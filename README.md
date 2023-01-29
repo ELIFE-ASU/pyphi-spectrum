@@ -1,17 +1,9 @@
 ## PyPhi-Spectrum
-PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given subsystem. Its core functionality is based on elementary function calls to PyPhi, however, it wraps this functionality together in a way that retains all possible Phi values that result as a consequence of degenerate core causes/effects. 
-
-### Overview
-
-Our algorithm follows the mathematical definition of IIT precisely, with the only difference to PyPhi being that whenever there is a minimization or maximization procedure, it looks for all minimizers or maximizers, forks the state of the computation accordingly, and carries on computations according to the mathematical definition for all forks.
-
-### Installation
-
-To install, download or clone this repository.
+PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given system. Its core functionality is based on elementary function calls to PyPhi, with the main difference from PyPhi being that whenever there is a minimization or maximization procedure, it looks for all minimizers or maximizers, forks the state of the computation accordingly, and carries on computations according to the mathematical definition for all forks.
 
 ### Usage
 
-For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid Phi_MIP values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously calculated and keeps only those between the min and max Phi value of the MIP.
+For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid $\Phi^{MIP}$ values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously calculated and keeps only those between the min and max Phi value of the MIP.
 
 #### Sample Usage
 
