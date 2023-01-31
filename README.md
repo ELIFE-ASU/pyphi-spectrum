@@ -1,11 +1,9 @@
 ## PyPhi-Spectrum
 PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible $\Phi$ values for a given system. Its core functionality is based on elementary function calls to PyPhi, with the main difference from PyPhi being that whenever there is a minimization or maximization procedure, it looks for all minimizers or maximizers, forks the state of the computation accordingly, and carries on computations according to the mathematical definition for all forks. 
 
-The figure below shows the rank-ordered spectrum of possible $\Phi$ values for a simple two-gate AND+OR logic system, with the single output from PyPhi shown as a black X.
+The figure below shows the rank-ordered spectrum of possible $\Phi$ values for a simple two-gate AND+OR logic system, with the single output from PyPhi shown as a black X. For more details, see https://www.biorxiv.org/content/10.1101/2021.04.07.438793v1.full.
 
-<img src = './AND_OR_RANK_ORDER_new.png' width=500>
-
-For more details, see https://www.biorxiv.org/content/10.1101/2021.04.07.438793v1.full.
+<img src = './Fission_Yeast_3_node_new.png' width=600>
 
 ### Installation
 
