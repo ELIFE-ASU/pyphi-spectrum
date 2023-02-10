@@ -9,10 +9,6 @@ The figure below shows the rank-ordered spectrum of possible $\Phi$ values for a
 
 To install, download or clone this repository.
 
-### Usage
-
-For each cut of a given subsystem, a spectrum of $\Phi$ values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding $\Phi$ values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid $\Phi^{MIP}$ values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously calculated and keeps only those between the min and max Phi value of the MIP.
-
 #### Sample Usage
 
 ```python
@@ -57,8 +53,6 @@ Phi_MIP = phi_spectrum.get_Phi_MIP(Phi_Spectrum)
 print("Phi MIP = ",Phi_MIP)
 ```
 
-
-
 #### Implementing Alternate Solutions
 
 The problem of degenerate core causes has several unofficial solutions, which can be implemented using the `solution` keyword passed to the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all possible degenerate core causes/effects of a given size (i.e. biggest or smallest). Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
@@ -66,7 +60,6 @@ The problem of degenerate core causes has several unofficial solutions, which ca
 An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi ("big Phi") based on the sum of phi values ("little phi") rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions since it implements a completely different definition of Phi.
 
 ## References
-
 ### More information about core PyPhi can be found at:
 
 - [Documentation for the latest stable
