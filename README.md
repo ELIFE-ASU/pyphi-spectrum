@@ -1,103 +1,15 @@
 ## PyPhi-Spectrum
-PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible Phi values for a given subsystem. Its core functionality is based on elementary function calls to PyPhi, however, it wraps this functionality together in a way that retains all possible Phi values that result as a consequence of degenerate core causes/effects.
+PyPhi-Spectrum is a wrapper for [PyPhi](https://doi.org/10.1371/journal.pcbi.1006343) that can be used to calculate all possible $\Phi$ values for a given system. Its core functionality is based on elementary function calls to PyPhi, with the main difference from PyPhi being that whenever there is a minimization or maximization procedure, it looks for all minimizers or maximizers, forks the state of the computation accordingly, and carries on computations according to the mathematical definition for all forks. The primary wrapper is `phi_spectrum.py` and may be found in the `pyphi` directory. 
+
+The figure below shows the rank-ordered spectrum of possible $\Phi$ values for a simple two-gate AND+OR logic system, with the single output from PyPhi shown as a black X. For more details, see https://www.biorxiv.org/content/10.1101/2021.04.07.438793v1.full.
+
+<img src = './Fission_Yeast_3_node_new.png' width=600>
 
 ### Installation
 
 To install, download or clone this repository.
 
-
-### Overview
-
-For each cut of a given subsystem, a spectrum of Phi values results as a consequence of an inability to resolve degenerate core causes/effects. These spectra can be calculated for all cuts via the function call `get_phi_spectrum` which takes a given subsystem as input and returns the cuts and their corresponding Phi values as output. However, only Phi values between the min and max value of the MIP (cut with the lowest overall Phi value) satisfy the definition of Phi_MIP. The valid Phi_MIP values are computed via the function call `get_Phi_MIP`, which takes the spectrum of Phi values previously calculated and keeps only those between the min and max Phi value of the MIP.
-
-### Potential Solutions
-
-The problem of degenerate core causes (also known as "underdetermined qualia") has several unofficial solutions, which can be implemented using the `solution` keyword passed to the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all possible degenerate core causes/effects of a given size (i.e. biggest or smallest). Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
-
-An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi ("big Phi") based on the sum of phi values ("little phi") rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions since it implements a completely different definition of Phi.
-
-### Core Functionality
-
-Other than the `phi_spectrum.py` file, everything is core PyPhi functionality. The wrapper is implemented as follows:
-
-```python
-## Return the spectrum of Phi values
-def get_phi_spectrum(subsystem,verbose=False,solution=None):
-
-  ## Initialize an empty list to store all Phi values for all cuts
-  Phi_Spectrum = []
-
-  ## Find all concepts for the specified subsystem
-  all_concepts = get_all_concepts(subsystem,solution)
-
-  ## Create all possible cause-effect structures (CES) via the cartesian product of all concepts for each mechanism
-  original_CES = get_all_CES(all_concepts)
-
-  print("\tNumber of Non-unique Constellations =",len(original_CES))
-  if verbose:
-    print(original_CES)
-
-
-  ## Now cut the original TPM and find the new set of concepts. Get the Phi value and repeat the cut
-  bipartitions = sia_bipartitions(subsystem.cut_indices, subsystem.cut_node_labels)
-  for cut in bipartitions:
-    print("\nEvaluating Cut ",cut)
-    new_subsystem = subsystem.apply_cut(cut)
-    
-    ## Find all concepts for the specified subsystem
-    new_concepts = get_all_concepts(new_subsystem,solution)
-    new_CES = get_all_CES(new_concepts)
-
-    print("\tNumber of Non-unique Constellations =",len(new_CES))
-    if verbose:
-      print(new_CES)
-
-    ## Now store all possible Phi values for this cut
-    Phi_cut = []
-    for original in original_CES:
-      for new in new_CES:
-        Phi = ces_distance(original,new)
-        if Phi not in Phi_cut:
-          Phi_cut.append(Phi)
-        
-    ## Append the list of Phi values to the spectrum
-    if verbose:
-      print("\tPhi Values for Cut = ",Phi_cut)
-    Phi_Spectrum.append(Phi_cut)
-
-  return(bipartitions,Phi_Spectrum)
-
-## Return all Phi values between the min and max Phi value of the MIP
-def get_Phi_MIP(phi_spectrum):
-
-  cuts = phi_spectrum[0]
-  values = phi_spectrum[1]
-
-  ## Get the minimum Phi value of the MIP
-  Phi_min_MIP = np.min(values[0])
-  for each in values:
-      if np.min(each) < Phi_min_MIP:
-          Phi_min_MIP = np.min(each)
-          
-          
-  ## Get the list(s) of Phi values corresponding to possible MIPS
-  possible_MIPs = (index for index in values if np.min(index) == Phi_min_MIP)
-
-
-  ## Upper bound on Phi is the smallest of the max Phi values
-  Phi_max_MIP = np.max(values[0])
-  for each in possible_MIPs:
-      if np.max(each) < Phi_max_MIP:
-          Phi_max_MIP = np.max(each)
-
-    ## Return all Phi values between Phi_min_MIP and Phi_max_MIP
-  valid_phi = [phi for index in values for phi in index if phi >= Phi_min_MIP and phi <= Phi_max_MIP]
-  return(np.unique(valid_phi))
-
-```
-
-### Sample Usage
-Sample usage for the `PyPhi_Spectrum` wrapper is as follows:
+#### Sample Usage
 
 ```python
 import pyphi
@@ -139,11 +51,15 @@ print("\nPhi Spectrum = ",Phi_Spectrum[1])
 ## Print all valid Phi_MIP values
 Phi_MIP = phi_spectrum.get_Phi_MIP(Phi_Spectrum)
 print("Phi MIP = ",Phi_MIP)
-
 ```
 
-## Credit
+#### Implementing Alternate Solutions
 
+The problem of degenerate core causes has several unofficial solutions, which can be implemented using the `solution` keyword passed to the `get_phi_spectrum` function. Keyword values include "Moon", "Smallest", "Largest", and `None`. The "Moon" solution throws away degenerate core causes/effects if multiple cause/effect repertoires have the same phi value (https://doi.org/10.3390/e21040405), the "Smallest" solution is to keep the smallest of the degenerate core cause/effect repertoires, and the "Largest" solution is to keep the largest of the degenerate core cause/effect repertoires. Since the smallest and largest repertoires are not guaranteed to be unique, these solutions retain all possible degenerate core causes/effects of a given size (i.e. biggest or smallest). Using keyword argument `None` keeps all degenerate core causes/effects regardless of their size.
+
+An additional solution is suggested by Krohn and Ostwald, 2017 (https://doi.org/10.1093/nc/nix017). Here, the authors propose a new definition of Phi ("big Phi") based on the sum of phi values ("little phi") rather than a distance between constellations. This solution can be implemented via the `USE_SMALL_PHI_DIFFERENCE_FOR_CES_DISTANCE` keyword in the standard PyPhi configuration file (`pyphi_config.yml`). This solution can be used in combination with any of the previous solutions since it implements a completely different definition of Phi.
+
+## References
 ### More information about core PyPhi can be found at:
 
 - [Documentation for the latest stable
